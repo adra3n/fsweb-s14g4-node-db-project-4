@@ -1,5 +1,5 @@
 const TariflerModel = require('./model')
-
+const middleware = require('./middleware')
 const router = require('express').Router()
 
 router.get('/', async (req, res, next) => {
@@ -11,15 +11,9 @@ router.get('/', async (req, res, next) => {
   }
 })
 
-router.get('/tarif_id', async (req, res, next) => {
+router.get('/:id', middleware.checkTarif, (req, res, next) => {
   try {
-    const { tarif_id } = req.params
-    const tarif = await TariflerModel.idyeGoreTarifGetir(tarif_id)
-    if (tarif) {
-      res.json(tarif)
-    } else {
-      res.status(400).json({ message: 'tarif bulunamadi' })
-    }
+    res.json(req.tarifExists)
   } catch (error) {
     next(error)
   }

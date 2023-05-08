@@ -6,37 +6,38 @@ async function getAll() {
 }
 
 async function idyeGoreTarifGetir(tarif_id) {
-  const tarif = await db('tarifler').where('tarifler.id', tarif_id)
+  const tarif = await db('tarifler as t')
+    .where('t.tarif_id', parseInt(tarif_id))
+    .first()
+  const adimlar = await db('tarifler as t')
+    .leftJoin('adimlar as a', 't.tarif_id', 'a.tarif_id')
+    .select('a.adim_id', 'a.adim_sirasi', 'a.adim_talimati')
+    .where('t.tarif_id', parseInt(tarif_id))
 
-  const adimlar = await db('tarifler')
-    .leftJoin('adimlar', 'tarifler.id', 'adimlar.tarifler_id')
-    .select('adimlar.id', 'adimlar.adim_sirasi', 'adimlar.adim_talimati')
-    .where('tarifler.id', tarif_id)
-
-  const miktar = await db('miktar')
-    .leftJoin('tarifler', 'tarifler.id', 'miktar.tarifler_id')
-    .leftJoin('icindekiler', 'icindekiler.id', 'miktar.icindekiler_id')
-    .leftJoin('adimlar', 'adimlar.id', 'miktar.adimlar_id')
+  const miktar = await db('miktar as m')
+    .leftJoin('tarifler as t', 't.tarif_id', 'm.tarif_id')
+    .leftJoin('icindekiler as i', 'i.icindekiler_id', 'm.icindekiler_id')
+    .leftJoin('adimlar as a', 'a.adim_id', 'm.adim_id')
     .select(
-      'tarifler.id as tarif_id',
-      'adimlar.id as adim_id',
-      'adimlar.adim_sirasi as adim_sirasi',
-      'icindekiler.id as icindekiler_id',
-      'icindekiler.icindekiler_adi as icindekiler_adi',
-      'miktar.miktar as miktar'
+      't.tarif_id',
+      'a.adim_id',
+      'a.adim_sirasi',
+      'i.icindekiler_id',
+      'i.icindekiler_adi',
+      'm.miktar'
     )
-    .where('tarifler.id', tarif_id)
+    .where('t.tarif_id', parseInt(tarif_id))
 
   const tarifModel = {
-    tarif_id: tarif[0].id,
-    tarif_adi: tarif[0].tarif_adi,
-    kayit_tarihi: tarif[0].kayit_tarihi,
+    tarif_id: tarif.tarif_id,
+    tarif_adi: tarif.tarif_adi,
+    kayit_tarihi: tarif.kayit_tarihi,
     adimlar: [],
   }
 
   adimlar.forEach((adim) => {
     adimModel = {
-      adim_id: adim.id,
+      adim_id: parseInt(adim.adim_id),
       adim_sirasi: adim.adim_sirasi,
       adim_talimati: adim.adim_talimati,
       icindekiler: [],
@@ -48,7 +49,7 @@ async function idyeGoreTarifGetir(tarif_id) {
     for (let k = 0; k < tarifModel.adimlar.length; k++) {
       if (miktar[i].adim_sirasi == tarifModel.adimlar[k].adim_sirasi) {
         tarifModel.adimlar[k].icindekiler.push({
-          icindekiler_id: miktar[i].icindekiler_id,
+          icindekiler_id: parseInt(miktar[i].icindekiler_id),
           icindekiler_adi: miktar[i].icindekiler_adi,
           miktar: miktar[i].miktar,
         })
