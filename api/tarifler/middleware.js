@@ -2,8 +2,6 @@ const TariflerModel = require('./model')
 
 const checkTarif = async (req, res, next) => {
   try {
-    // console.log('>>>>>>', req)
-
     const { id } = req.params
     const tarif = await TariflerModel.idyeGoreTarifGetir(id)
 

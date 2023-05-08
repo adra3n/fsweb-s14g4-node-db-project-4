@@ -28,8 +28,6 @@ async function idyeGoreTarifGetir(tarif_id) {
     )
     .where('t.tarif_id', parseInt(tarif_id))
 
-  console.log('tarif___________', tarif, '___', tarif.tarif_id)
-
   const tarifModel = {
     tarif_id: tarif ? tarif.tarif_id : undefined,
     tarif_adi: tarif ? tarif.tarif_adi : undefined,
