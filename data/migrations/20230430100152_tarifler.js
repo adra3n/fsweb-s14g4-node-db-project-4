@@ -3,37 +3,57 @@
  * @returns { Promise<void> }
  */
 exports.up = function (knex) {
-  const all = knex.schema
+  return knex.schema
     .createTable('tarifler', (table) => {
-      table.increments('tarif_id'),
-        table.string('tarif_adi').notNullable().unique()
-      table.timestamp('kayit_tarihi').defaultTo(knex.fn.now())
+      table.increments()
+      table.string('tarif_adi').unique().notNullable()
+      table.timestamp('kayit_tarihi').notNullable()
     })
     .createTable('adimlar', (table) => {
-      table.increments('adim_id')
+      table.increments()
       table.integer('adim_sirasi').unsigned().notNullable()
       table.string('adim_talimati').notNullable()
       table
         .integer('tarif_id')
-        .notNullable()
         .unsigned()
-        .references('tarif_id')
+        .notNullable()
+        .references('id')
         .inTable('tarifler')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE')
     })
     .createTable('icindekiler', (table) => {
-      table.increments('icindekiler_id')
-      table.string('icindekiler_adi').notNullable()
+      table.increments()
+      table.string('icindekiler_adi')
     })
-    .createTable('icindekiler_adimlar', (table) => {
-      table.increments('icindekiler_adimlar_id')
-      table.float('miktar').notNullable()
-      table.integer('adim_id').references('adim_id').inTable('adimlar')
+    .createTable('miktar', (table) => {
+      table
+        .integer('tarif_id')
+        .unsigned()
+        .notNullable()
+        .references('id')
+        .inTable('tarifler')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE')
+      table
+        .integer('adim_id')
+        .unsigned()
+        .notNullable()
+        .references('id')
+        .inTable('adimlar')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE')
       table
         .integer('icindekiler_id')
-        .references('icindekiler_id')
+        .unsigned()
+        .notNullable()
+        .references('id')
         .inTable('icindekiler')
+        .onUpdate('CASCADE')
+        .onDelete('CASCADE')
+      table.integer('miktar')
+      table.primary(['tarif_id', 'adim_id', 'icindekiler_id'])
     })
-  return all
 }
 
 /**
@@ -42,7 +62,7 @@ exports.up = function (knex) {
  */
 exports.down = function (knex) {
   return knex.schema
-    .dropTableIfExists('icindekiler_adimlar')
+    .dropTableIfExists('miktar')
     .dropTableIfExists('icindekiler')
     .dropTableIfExists('adimlar')
     .dropTableIfExists('tarifler')
